@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>代码格式</title>
+    <script src="./codemirror-5.59.4/lib/codemirror.js"></script>
+    <script src="./codemirror-5.59.4/addon/edit/matchbrackets.js"></script>
+    <script src="./codemirror-5.59.4/addon/selection/active-line.js"></script>
+    <script src="./codemirror-5.59.4/keymap/sublime.js"></script>
+    <script src="./codemirror-5.59.4/mode/clike/clike.js"></script>
+    <link rel="stylesheet" href="./codemirror-5.59.4/lib/codemirror.css">
+    <link rel="stylesheet" href="./codemirror-5.59.4/theme/monokai.css">
+    <!--<style>
+        .CodeMirror {
+            border: 1px solid black;
+            font-size: 13px
+        }
+    </style>-->
+
+</head>
+<body>
+<textarea id="code" name="code">
+
+</textarea>
+</body>
+
+
+<script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        mode: 'text/x-java', //设置编译器编程语言关联内容，需要引入mode/javascript/javascript.js
+        lineNumbers: true, //显示行号
+        smartIndent: true, //自动缩进是否开启
+        indentUnit: 4, //缩进单位
+        theme: 'monokai', //设置主题
+        styleActiveLine: true, //设置光标所在行高亮，需要引入addon/selection/active-line.js
+        keyMap: 'sublime', // 快捷键，default使用默认快捷键，除此之外包括emacs，sublime，vim快捷键，使用需引入工具,keymap/sublime.js
+        lineWrapping: true, //代码折叠
+        foldGutter: true,
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        matchBrackets: true,  //括号匹配
+        autoCloseBrackets: true,
+        showHint: true,
+        extraKeys:{"Ctrl-Space":"autocomplete"}//ctrl-space设置快捷键
+    });
+</script>
+</html>

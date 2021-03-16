@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>题目详情</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" type="text/css" href="css/route-detail.css">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery-3.3.1.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <!--导入布局js，共享header和footer-->
+    <script type="text/javascript" src="js/include.js"></script>
+    <script src="js/getParameter.js"></script>
+    <script type="text/javascript" src="/webjars/jquery/1.11.3/jquery.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/webjars/github-com-sentsin-layer/3.0.3/src/layer.js"></script>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.3.7/css/bootstrap.css">
+    <script src="./codemirror-5.59.4/lib/codemirror.js"></script>
+    <script src="./codemirror-5.59.4/addon/edit/matchbrackets.js"></script>
+    <script src="./codemirror-5.59.4/addon/selection/active-line.js"></script>
+    <script src="./codemirror-5.59.4/keymap/sublime.js"></script>
+    <script src="./codemirror-5.59.4/mode/clike/clike.js"></script>
+    <link rel="stylesheet" href="./codemirror-5.59.4/lib/codemirror.css">
+    <link rel="stylesheet" href="./codemirror-5.59.4/theme/monokai.css">
+</head>
+<script>
+    var routeIntroduce;
+    $(function () {
+        //获取rid
+        var rid = getParameter("rid");
+        //alert(rid);
+        //发送ajax请求
+        $.get("route/findOne", {rid: rid}, function (route) {
+            //alert(route.rname);
+            //填充html
+            routeIntroduce = route.routeIntroduce;
+            $("#rname").html("题目名称：" + route.rname);
+            $("#route_name").html(route.rname.substr(0, 10) + '......');
+            //$("#context").html(route.routeIntroduce);
+            $("#price").html("题目难度系数：" + route.price);
+            $("#sname").html(route.seller.sname);
+            $("#consphone").html(route.seller.consphone);
+            $("#address").html(route.seller.address);
+            $("#favoriteCount").html("已收藏" + route.count + "次");
+        });
+        $.get("route/pageCateGory", {rid: rid}, function (category) {
+            $("#before_page").html(category[1]);
+            $("#before_page").attr("href", "route_list.html?cid=" + category[0] + "");
+
+        });
+
+    });
+
+    $(function () {
+        //发送请求  判断用户是否收藏过该线路
+        var rid = getParameter("rid");
+        $.get("route/isFavourite", {rid: rid}, function (flag) {
+            if (flag) {
+                //用户已经收藏过 favorite  <a class="btn already" disabled="disabled">
+                //设置收藏按钮样式
+                $("#favorite").addClass("already");
+                $("#favorite").attr("disabled", "disabled");
+                //删除点击事件
+                $("#favorite").removeAttr("onclick");
+            } else {
+                //用户尚未收藏
+
+            }
+        });
+    });
+
+    //点击收藏按钮触发的按钮
+    function addFavorite() {
+        var rid = getParameter("rid");
+        //判断用户是否登录
+        $.get("user/findOne", {}, function (user) {
+            if (user) {
+                //用户登陆
+                //添加收藏
+                $.get("route/addFavourite", {rid: rid}, function () {
+                    //刷新页面
+                    location.reload();
+
+
+                });
+            } else {
+                //用户没有登录
+                alert("您尚未登陆，请登录");
+                location.href = "http://localhost:8080/login.html";
+            }
+        });
+    };
+
+    function doSubmit() {
+        var javaSource = editor.getValue();
+        $.post("route/complie", {javaSource: javaSource}, function (result) {
+            layer.msg("结果:" + result.message);
+            //设置执行信息
+            $("#complieInfoDiv").html("运行耗时(毫秒)：" + result.excuteDurationTime + "<br>编译状态：" + result.message);
+            //设置执行结果
+            $("#resultDiv").html(result.excuteResult);
+        });
+    };
+    function doGetAnswer() {
+        alert("答案详情："+routeIntroduce);
+    };
+</script>
+</head>
+<body>
+<!--引入头部-->
+<div id="header"></div>
+<!-- 详情 start -->
+<div class="bread_box">
+    <a href="index.html">首页</a>
+    <a href="#" id="before_page"></a><span> &gt;</span>
+    <a href="#" id="route_name"></a>
+</div>
+<div class="form-group" style="padding: 20px">
+    <div>
+        <p class="price"><strong id="rname"></strong></p>
+        <div>
+            <p class="price"><strong id="price"></strong><span style="color: red">星</span></p>
+        </div>
+        <div class="collect">
+            <p>
+                <a class="btn" id="favorite" onclick="addFavorite()">
+                    <i class="glyphicon glyphicon-heart-empty"></i>点击收藏</a>
+                <span id="favoriteCount"></span>
+            </p>
+        </div>
+        <div class="">
+            <form role="form">
+                <div class="form-group2" style="padding: 20px">
+                    <a class="">编码区</a>
+                    <textarea id="code" class="form-control" rows="15">
+                    public class Main
+                    {
+                        public static void main(String[] args){
+                            System.out.println("hello");
+                        }
+                    }
+                </textarea>
+                </div>
+                <div class="form-group1">
+
+                <button onclick="doSubmit()" type="button" style="width: 200px" class="btn btn-success center-block"
+                        aria-hidden="true">提交
+                </button>
+                <button onclick="doGetAnswer()" type="button" style="width: 200px" class="btn btn-danger center-block"
+                        aria-hidden="true">查看答案
+                </button>
+                <br><br><br>
+                <div style="padding: 20px">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">运行信息</h3>
+                        </div>
+                        <div class="panel-body" id="complieInfoDiv">
+                        </div>
+                    </div>
+                </div>
+                <div style="padding: 20px">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">运行结果</h3>
+                        </div>
+                        <div class="panel-body" id="resultDiv">
+
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- 详情 end -->
+        <!--引入足部-->
+        <div id="footer"></div>
+
+    </div>
+</div>
+</body>
+<script>
+    var editor;
+    $(function () {
+        editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            mode: 'text/x-java', //设置编译器编程语言关联内容，需要引入mode/javascript/javascript.js
+            lineNumbers: true, //显示行号
+            smartIndent: true, //自动缩进是否开启
+            //indentUnit: 0, //缩进单位
+            theme: 'monokai', //设置主题
+            styleActiveLine: true, //设置光标所在行高亮，需要引入addon/selection/active-line.js
+            keyMap: 'sublime', // 快捷键，default使用默认快捷键，除此之外包括emacs，sublime，vim快捷键，使用需引入工具,keymap/sublime.js
+            lineWrapping: true, //代码折叠
+            foldGutter: true,
+            gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+            matchBrackets: true,  //括号匹配
+            autoCloseBrackets: true,
+            extraKeys: {"Ctrl-Space": "autocomplete"},//ctrl-space设置快捷键
+            showHint: true
+        });
+        editor.on(javaEditor,document.getElementById("code"));
+    });
+</script>
+
+</html>
